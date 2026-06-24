@@ -62,9 +62,11 @@ public/
       jump selection.
 - [x] **M4 — Tools.** Cross-section slice (clip plane, X/Y/Z, position, flip),
       hide/show, explode/reassemble, search.
-- [~] **M5 — Polish + deploy.** Studio lighting + tuned PBR done; production
-      build verified. _(baked AO, fake-subsurface rim, mobile layout, and the
-      live deploy still to come.)_
+- [~] **M5 — Polish + deploy.** Wet physical/subsurface tissue material + IBL +
+      neutral tone mapping; Anatomical/Realistic appearance modes; floating
+      labels; explode ghost-trails; PNG snapshot export; full mobile bottom-sheet
+      layout. _(baked AO, nerve/vessel layers, and the live deploy still to
+      come.)_
 
 ## Attribution
 
