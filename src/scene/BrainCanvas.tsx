@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import * as THREE from "three";
 import { CameraRig } from "./CameraRig";
-import { PlaceholderBrain } from "./PlaceholderBrain";
+import { BrainModel } from "./BrainModel";
 import { useBrainStore } from "../state/store";
 
 function Lights() {
@@ -33,7 +33,7 @@ export function BrainCanvas() {
     >
       <Suspense fallback={null}>
         <Lights />
-        <PlaceholderBrain />
+        <BrainModel />
         <CameraRig />
       </Suspense>
     </Canvas>

@@ -102,7 +102,7 @@ export function CameraRig() {
       const bounds = getAllBounds();
       if (!bounds) return;
       const view = focus.view ?? "reset";
-      const { toPos, toTarget } = frame(bounds, VIEW_DIRS[view], 2.3, 0.001);
+      const { toPos, toTarget } = frame(bounds, VIEW_DIRS[view], 1.75, 0.001);
       startMove(toPos, toTarget, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,7 +116,7 @@ export function CameraRig() {
     if (!didInit.current) {
       const bounds = getAllBounds();
       if (bounds) {
-        const { toPos, toTarget } = frame(bounds, VIEW_DIRS.reset, 2.3, 0.001);
+        const { toPos, toTarget } = frame(bounds, VIEW_DIRS.reset, 1.75, 0.001);
         camera.position.copy(toPos);
         controls.target.copy(toTarget);
         controls.update();

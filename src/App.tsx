@@ -1,3 +1,4 @@
+import { Loader } from "@react-three/drei";
 import { BrainCanvas } from "./scene/BrainCanvas";
 import { StructureTree } from "./ui/StructureTree";
 import { InfoPanel } from "./ui/InfoPanel";
@@ -43,6 +44,19 @@ export default function App() {
 
       <Toolbar />
       <Credits />
+
+      <Loader
+        containerStyles={{ background: "rgba(5,7,11,0.85)" }}
+        innerStyles={{ width: 180, height: 3 }}
+        barStyles={{ background: "#74a4ff", height: 3 }}
+        dataStyles={{
+          color: "#9aa6ba",
+          fontSize: 12,
+          fontFamily: "Inter, system-ui, sans-serif",
+          letterSpacing: "0.4px",
+        }}
+        dataInterpolation={(p) => `Loading brain… ${p.toFixed(0)}%`}
+      />
     </div>
   );
 }

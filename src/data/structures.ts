@@ -199,6 +199,34 @@ export const STRUCTURES: Record<string, StructureInfo> = {
     ],
     related: ["thalamus", "corpusCallosum"],
   },
+  insula: {
+    key: "insula",
+    name: "Insula",
+    system: "Cerebral cortex",
+    color: "#c98f5b",
+    desc: "Cortex folded deep inside the lateral sulcus, hidden under the frontal, parietal, and temporal opercula — a hub for interoception and the felt sense of the body's internal state.",
+    functions: [
+      "Interoception (body-state awareness)",
+      "Taste processing",
+      "Emotional & risk evaluation",
+      "Pain & visceral sensation",
+    ],
+    related: ["frontalLobe", "temporalLobe", "amygdala"],
+  },
+  cingulate: {
+    key: "cingulate",
+    name: "Cingulate gyrus",
+    system: "Limbic system",
+    color: "#c95b9f",
+    desc: "An arching ridge of cortex wrapped just above the corpus callosum — a junction of the limbic system that links emotion to attention, motivation, and decision-making.",
+    functions: [
+      "Emotion regulation",
+      "Conflict & error monitoring",
+      "Attention & motivation",
+      "Autonomic control",
+    ],
+    related: ["corpusCallosum", "hippocampus", "frontalLobe"],
+  },
 };
 
 /** Display order for grouping in the structure tree. */
