@@ -53,12 +53,18 @@ public/
 - [x] **M0 — Interaction shell.** Full loop on a placeholder: orbit, hover,
       click-select (3D + tree), fly-to-focus, info panel, isolate, explode,
       view presets, search, visibility.
-- [ ] **M1 — Real brain in.** Swap the placeholder for the real Z-Anatomy /
-      BodyParts3D mesh with correctly-named, separable structures.
-- [ ] **M2 — Selection polish** (framing, leader-line labels, tree sync).
-- [ ] **M3 — Content** wired to real node names.
-- [ ] **M4 — Tools** (cross-section slice, hide/show, explode/reassemble).
-- [ ] **M5 — Polish + deploy** (PBR, baked AO, fake-subsurface rim, mobile).
+- [x] **M1 — Real brain in.** Real Z-Anatomy brain (15 named, separable
+      structures) via the Node-only asset pipeline. 1.1 MB Draco GLB.
+- [x] **M2 — Selection polish.** Eased fly-to-focus + signature focus-and-fade
+      (rest of the brain ghosts translucent), emissive highlight, tree↔3D sync.
+      _(leader-line labels still to come)_
+- [x] **M3 — Content** wired to the real node names; connected-structure chips
+      jump selection.
+- [x] **M4 — Tools.** Cross-section slice (clip plane, X/Y/Z, position, flip),
+      hide/show, explode/reassemble, search.
+- [~] **M5 — Polish + deploy.** Studio lighting + tuned PBR done; production
+      build verified. _(baked AO, fake-subsurface rim, mobile layout, and the
+      live deploy still to come.)_
 
 ## Attribution
 
