@@ -51,9 +51,18 @@ function StructureMesh({
 
   if (!visible) return null;
 
-  const faded = isolate && anySelected && !selected;
-  const emissiveIntensity = selected ? 0.55 : hovered ? 0.3 : 0.05;
-  const opacity = faded ? 0.06 : 1;
+  // Signature interaction: selecting a structure flies the camera in AND ghosts
+  // the rest translucent so the focus stands out (and deep structures become
+  // visible). The Isolate toggle deepens the fade to near-invisible.
+  const dimmed = anySelected && !selected;
+  const faded = dimmed; // drives depthWrite/transparency
+  const opacity = dimmed ? (isolate ? 0.04 : 0.16) : 1;
+  // Highlight by glowing in the structure's own colour — no inverted-hull
+  // outline (its world-unit thickness ballooned over a ~3-unit model).
+  const emissiveIntensity = selected ? 0.5 : hovered ? 0.22 : 0.05;
+  const color = selected
+    ? new THREE.Color(info.color).lerp(new THREE.Color("#ffffff"), 0.18)
+    : info.color;
   const offset: [number, number, number] = [
     dir.x * explode * EXPLODE_K,
     dir.y * explode * EXPLODE_K,
@@ -85,10 +94,10 @@ function StructureMesh({
         onClick={onClick}
       >
         <meshStandardMaterial
-          color={info.color}
-          emissive={selected ? "#ffffff" : info.color}
+          color={color}
+          emissive={info.color}
           emissiveIntensity={emissiveIntensity}
-          roughness={0.62}
+          roughness={0.55}
           metalness={0.0}
           // transparent kept constant; occlusion via depthWrite (see PlaceholderBrain).
           transparent

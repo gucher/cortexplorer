@@ -8,14 +8,14 @@ import { useBrainStore } from "../state/store";
 function Lights() {
   return (
     <>
-      <hemisphereLight args={["#7d8aa6", "#0c0f15", 0.55]} />
-      <ambientLight intensity={0.18} />
+      <hemisphereLight args={["#8c97b5", "#0a0d13", 0.5]} />
+      <ambientLight intensity={0.15} />
       {/* Key */}
-      <directionalLight position={[4, 6, 5]} intensity={2.1} color="#fff4e8" />
-      {/* Fill */}
-      <directionalLight position={[-5, 1, 2]} intensity={0.5} color="#9fb4ff" />
-      {/* Rim / back — gives the signature edge glow */}
-      <directionalLight position={[-2, 3, -6]} intensity={1.6} color="#cfe0ff" />
+      <directionalLight position={[4, 6, 5]} intensity={1.9} color="#fff4e8" />
+      {/* Cool fill */}
+      <directionalLight position={[-5, 1, 2]} intensity={0.55} color="#9fb4ff" />
+      {/* Rim / back — the signature edge glow */}
+      <directionalLight position={[-3, 2, -6]} intensity={1.8} color="#cfe0ff" />
     </>
   );
 }
@@ -27,7 +27,15 @@ export function BrainCanvas() {
     <Canvas
       className="brain-canvas"
       dpr={[1, 2]}
-      gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping }}
+      gl={{
+        antialias: true,
+        alpha: true,
+        // Keep the drawing buffer so the canvas can be screenshotted/exported
+        // reliably (and so captures aren't blank on idle frames).
+        preserveDrawingBuffer: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.05,
+      }}
       camera={{ fov: 45, near: 0.05, far: 100, position: [2.4, 1.7, 3.6] }}
       onPointerMissed={() => select(null)}
     >
