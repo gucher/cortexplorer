@@ -1,0 +1,122 @@
+import { create } from "zustand";
+import { STRUCTURE_KEYS } from "../data/structures";
+
+export type Axis = "x" | "y" | "z";
+export type ViewPreset =
+  | "reset"
+  | "top"
+  | "bottom"
+  | "front"
+  | "back"
+  | "left"
+  | "right";
+
+/**
+ * A camera-move request. The CameraRig watches `nonce`; bumping it re-triggers a
+ * move even when the destination is unchanged (e.g. pressing "Reset" twice).
+ */
+export interface FocusRequest {
+  kind: "structure" | "view";
+  key?: string;
+  view?: ViewPreset;
+  nonce: number;
+}
+
+export interface SliceState {
+  enabled: boolean;
+  axis: Axis;
+  /** Normalized [-1, 1] position of the clip plane along the axis. */
+  position: number;
+  flip: boolean;
+}
+
+interface BrainState {
+  selectedKey: string | null;
+  hoveredKey: string | null;
+  /** When true, non-selected structures fade translucent. */
+  isolate: boolean;
+  /** 0 = assembled, 1 = fully exploded. */
+  explode: number;
+  visibility: Record<string, boolean>;
+  slice: SliceState;
+  focus: FocusRequest;
+  search: string;
+
+  select: (key: string | null) => void;
+  hover: (key: string | null) => void;
+  setIsolate: (v: boolean) => void;
+  toggleIsolate: () => void;
+  setExplode: (v: number) => void;
+  setVisibility: (key: string, v: boolean) => void;
+  toggleVisibility: (key: string) => void;
+  showAll: () => void;
+  setSlice: (patch: Partial<SliceState>) => void;
+  setView: (view: ViewPreset) => void;
+  refocus: () => void;
+  setSearch: (s: string) => void;
+  reset: () => void;
+}
+
+const allVisible = (): Record<string, boolean> =>
+  Object.fromEntries(STRUCTURE_KEYS.map((k) => [k, true]));
+
+export const useBrainStore = create<BrainState>()((set, get) => ({
+  selectedKey: null,
+  hoveredKey: null,
+  isolate: false,
+  explode: 0,
+  visibility: allVisible(),
+  slice: { enabled: false, axis: "x", position: 0, flip: false },
+  focus: { kind: "view", view: "reset", nonce: 0 },
+  search: "",
+
+  select: (key) =>
+    set((s) => ({
+      selectedKey: key,
+      focus:
+        key === null
+          ? s.focus
+          : { kind: "structure", key, nonce: s.focus.nonce + 1 },
+    })),
+
+  hover: (key) => set({ hoveredKey: key }),
+
+  setIsolate: (v) => set({ isolate: v }),
+  toggleIsolate: () => set((s) => ({ isolate: !s.isolate })),
+
+  setExplode: (v) => set({ explode: Math.max(0, Math.min(1, v)) }),
+
+  setVisibility: (key, v) =>
+    set((s) => ({ visibility: { ...s.visibility, [key]: v } })),
+  toggleVisibility: (key) =>
+    set((s) => ({ visibility: { ...s.visibility, [key]: !s.visibility[key] } })),
+  showAll: () => set({ visibility: allVisible() }),
+
+  setSlice: (patch) => set((s) => ({ slice: { ...s.slice, ...patch } })),
+
+  setView: (view) =>
+    set((s) => ({ focus: { kind: "view", view, nonce: s.focus.nonce + 1 } })),
+
+  refocus: () => {
+    const { selectedKey } = get();
+    set((s) => ({
+      focus: selectedKey
+        ? { kind: "structure", key: selectedKey, nonce: s.focus.nonce + 1 }
+        : { kind: "view", view: "reset", nonce: s.focus.nonce + 1 },
+    }));
+  },
+
+  setSearch: (s) => set({ search: s }),
+
+  reset: () =>
+    set((s) => ({
+      selectedKey: null,
+      hoveredKey: null,
+      isolate: false,
+      explode: 0,
+      visibility: allVisible(),
+      slice: { enabled: false, axis: "x", position: 0, flip: false },
+      search: "",
+      focus: { kind: "view", view: "reset", nonce: s.focus.nonce + 1 },
+    })),
+}));
