@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { STRUCTURE_KEYS, STRUCTURES } from "../data/structures";
@@ -18,8 +18,6 @@ const MODEL_ROTATION: [number, number, number] = [0, 0, 0];
 // Warm grey-pink fixed-brain tissue base for the "realistic" appearance mode.
 const TISSUE = new THREE.Color("#c8a191");
 const WHITE = new THREE.Color("#ffffff");
-
-const _c = new THREE.Vector3();
 
 function StructureMesh({
   keyName,
@@ -41,6 +39,7 @@ function StructureMesh({
   const explode = useBrainStore((s) => s.explode);
   const sliceEnabled = useBrainStore((s) => s.slice.enabled);
   const realistic = useBrainStore((s) => s.realistic);
+  const showLabels = useBrainStore((s) => s.showLabels);
 
   useEffect(() => {
     const g = groupRef.current;
@@ -49,12 +48,13 @@ function StructureMesh({
     return () => unregisterObject(keyName, g);
   }, [keyName]);
 
-  // Outward explode direction = from brain center (origin) to this structure.
-  const dir = useMemo(() => {
+  // Local centroid (label anchor) + outward explode direction.
+  const { centroid, dir } = useMemo(() => {
     geometry.computeBoundingBox();
-    geometry.boundingBox!.getCenter(_c);
-    if (_c.lengthSq() < 1e-6) return new THREE.Vector3(0, 1, 0);
-    return _c.clone().normalize();
+    const c = geometry.boundingBox!.getCenter(new THREE.Vector3());
+    const d =
+      c.lengthSq() < 1e-6 ? new THREE.Vector3(0, 1, 0) : c.clone().normalize();
+    return { centroid: c, dir: d };
   }, [geometry]);
 
   if (!visible) return null;
@@ -62,7 +62,7 @@ function StructureMesh({
   // Signature interaction: selecting a structure flies the camera in AND ghosts
   // the rest translucent so the focus stands out. Isolate deepens the fade.
   const dimmed = anySelected && !selected;
-  const opacity = dimmed ? (isolate ? 0.04 : 0.16) : 1;
+  const opacity = dimmed ? (isolate ? 0.03 : 0.1) : 1;
   const emissiveIntensity = selected ? 0.4 : hovered ? 0.18 : 0.03;
 
   const baseColor = realistic
@@ -92,6 +92,7 @@ function StructureMesh({
   };
 
   const showGhost = explode > 0.02 && !dimmed;
+  const labelVisible = selected || (showLabels && !dimmed);
 
   return (
     <>
@@ -137,6 +138,27 @@ function StructureMesh({
             onBeforeCompile={brainOnBeforeCompile}
           />
         </mesh>
+
+        {labelVisible && (
+          <Html
+            position={[centroid.x, centroid.y, centroid.z]}
+            center
+            occlude={showLabels && !selected}
+            zIndexRange={[40, 0]}
+            wrapperClass="label3d-wrap"
+          >
+            <button
+              className={"label3d" + (selected ? " is-selected" : "")}
+              onClick={(e) => {
+                e.stopPropagation();
+                select(keyName);
+              }}
+            >
+              <span className="label3d__dot" style={{ background: info.color }} />
+              <span className="label3d__name">{info.name}</span>
+            </button>
+          </Html>
+        )}
       </group>
     </>
   );

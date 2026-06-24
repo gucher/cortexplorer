@@ -3,6 +3,7 @@ import { BrainCanvas } from "./scene/BrainCanvas";
 import { StructureTree } from "./ui/StructureTree";
 import { InfoPanel } from "./ui/InfoPanel";
 import { Toolbar } from "./ui/Toolbar";
+import { DisplayControls } from "./ui/DisplayControls";
 import { Credits } from "./ui/Credits";
 
 export default function App() {
@@ -33,6 +34,8 @@ export default function App() {
           <div className="brand__sub">Interactive brain atlas</div>
         </div>
       </header>
+
+      <DisplayControls />
 
       <aside className="panel panel--left">
         <StructureTree />
