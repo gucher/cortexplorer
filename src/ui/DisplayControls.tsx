@@ -12,7 +12,7 @@ export function DisplayControls() {
     const url = canvas.toDataURL("image/png");
     const a = document.createElement("a");
     a.href = url;
-    a.download = `cortex-${Date.now()}.png`;
+    a.download = `cortexplorer-${Date.now()}.png`;
     a.click();
   };
 

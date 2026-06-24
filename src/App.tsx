@@ -36,7 +36,7 @@ export default function App() {
           />
         </svg>
         <div className="brand__text">
-          <div className="brand__name">Cortex</div>
+          <div className="brand__name">Cortexplorer</div>
           <div className="brand__sub">Interactive brain atlas</div>
         </div>
       </header>

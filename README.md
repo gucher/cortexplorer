@@ -1,4 +1,4 @@
-# Cortex — Interactive Brain Atlas
+# Cortexplorer — Interactive Brain Atlas
 
 An interactive, web-based 3D explorer of the human brain. Orbit and flip the
 brain, click any structure to select it, fly the camera in and isolate it, read
