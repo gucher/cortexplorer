@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { STRUCTURE_KEYS, STRUCTURES } from "../data/structures";
 import { useBrainStore } from "../state/store";
 import { registerObject, unregisterObject } from "./registry";
+import { clipPlanes } from "./clipping";
 
 const MODEL_URL = "/models/brain.glb";
 const EXPLODE_K = 1.4;
@@ -33,6 +34,7 @@ function StructureMesh({
   const isolate = useBrainStore((s) => s.isolate);
   const anySelected = useBrainStore((s) => s.selectedKey !== null);
   const explode = useBrainStore((s) => s.explode);
+  const sliceEnabled = useBrainStore((s) => s.slice.enabled);
 
   useEffect(() => {
     const g = groupRef.current;
@@ -103,6 +105,10 @@ function StructureMesh({
           transparent
           opacity={opacity}
           depthWrite={!faded}
+          // One stable clip plane always present (pushed away when not slicing);
+          // double-sided while slicing so the cut reveals interior walls.
+          clippingPlanes={clipPlanes}
+          side={sliceEnabled ? THREE.DoubleSide : THREE.FrontSide}
         />
       </mesh>
     </group>

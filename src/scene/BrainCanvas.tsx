@@ -1,9 +1,21 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import * as THREE from "three";
 import { CameraRig } from "./CameraRig";
 import { BrainModel } from "./BrainModel";
 import { useBrainStore } from "../state/store";
+import { updateClipPlane } from "./clipping";
+
+function ClippingController() {
+  const enabled = useBrainStore((s) => s.slice.enabled);
+  const axis = useBrainStore((s) => s.slice.axis);
+  const position = useBrainStore((s) => s.slice.position);
+  const flip = useBrainStore((s) => s.slice.flip);
+  useEffect(() => {
+    updateClipPlane(enabled, axis, position, flip);
+  }, [enabled, axis, position, flip]);
+  return null;
+}
 
 function Lights() {
   return (
@@ -37,12 +49,16 @@ export function BrainCanvas() {
         toneMappingExposure: 1.05,
       }}
       camera={{ fov: 45, near: 0.05, far: 100, position: [2.4, 1.7, 3.6] }}
+      onCreated={({ gl }) => {
+        gl.localClippingEnabled = true;
+      }}
       onPointerMissed={() => select(null)}
     >
       <Suspense fallback={null}>
         <Lights />
         <BrainModel />
         <CameraRig />
+        <ClippingController />
       </Suspense>
     </Canvas>
   );

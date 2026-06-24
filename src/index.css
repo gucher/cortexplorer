@@ -506,6 +506,12 @@ a:hover {
   font-size: 12px;
   color: var(--text-dim);
 }
+.dock__slice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 2px;
+}
 
 /* ── Range slider ────────────────────────────────────────────── */
 input[type="range"] {
