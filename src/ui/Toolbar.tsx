@@ -20,9 +20,26 @@ export function Toolbar() {
   const reset = useBrainStore((s) => s.reset);
   const slice = useBrainStore((s) => s.slice);
   const setSlice = useBrainStore((s) => s.setSlice);
+  const toggleMobileTree = useBrainStore((s) => s.toggleMobileTree);
 
   return (
     <div className="dock">
+      <button
+        className="dock__btn dock__browse"
+        onClick={toggleMobileTree}
+        aria-label="Browse structures"
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
+          <path
+            d="M2 4h12M2 8h12M2 12h12"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+        Structures
+      </button>
+
       <button className="dock__btn dock__btn--primary" onClick={reset}>
         Reset
       </button>

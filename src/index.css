@@ -165,7 +165,16 @@ a:hover {
 .tree {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Mobile sheet drag-handle (hidden on desktop). */
+.panel__grip {
+  display: none;
+}
+.sheet-backdrop {
+  display: none;
 }
 .tree__search {
   display: flex;
@@ -293,7 +302,8 @@ a:hover {
 .info {
   padding: 18px 18px 20px;
   overflow-y: auto;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 .info--empty {
   display: flex;
@@ -801,31 +811,143 @@ code {
   background-clip: padding-box;
 }
 
+/* "Structures" opener lives in the dock on mobile only. */
+.dock__browse {
+  display: none;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 820px) {
+@media (max-width: 960px) {
   .panel--left {
-    width: 220px;
+    width: 232px;
   }
   .panel--right {
-    width: 270px;
+    width: 290px;
   }
 }
-@media (max-width: 680px) {
-  .panel {
-    top: auto;
-    bottom: 92px;
-    height: 42vh;
-    width: auto;
-    left: 12px;
-    right: 12px;
+
+/* ── Mobile: bottom-sheet layout ─────────────────────────────── */
+@media (max-width: 760px) {
+  .brand {
+    top: 12px;
+    left: 14px;
   }
-  .panel--left {
+  .brand__sub {
     display: none;
   }
+
+  .display {
+    top: 12px;
+    right: 14px;
+    left: auto;
+    transform: none;
+    gap: 4px;
+    padding: 4px;
+  }
+  .display__seg button {
+    padding: 6px 9px;
+    font-size: 11px;
+  }
+  .display__btn {
+    padding: 6px 8px;
+    font-size: 0; /* icon-only on mobile */
+    gap: 0;
+  }
+  .display__btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Panels become bottom sheets. */
+  .panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    max-height: 74vh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    transform: translateY(110%);
+    transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 30;
+  }
+  .panel.is-open {
+    transform: translateY(0);
+  }
+  .panel--left,
   .panel--right {
     width: auto;
   }
-  .brand__sub {
+  .panel--left {
+    height: 74vh;
+  }
+
+  .panel__grip {
+    display: block;
+    width: 100%;
+    height: 26px;
+    background: none;
+    border: none;
+    position: relative;
+    flex: none;
+    cursor: pointer;
+  }
+  .panel__grip::before {
+    content: "";
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 10, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 29;
+    animation: fade 0.2s ease;
+  }
+
+  /* Dock = single scrollable bottom toolbar. */
+  .dock {
+    left: 12px;
+    right: 12px;
+    bottom: 14px;
+    transform: none;
+    max-width: none;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-radius: 14px;
+  }
+  .dock::-webkit-scrollbar {
+    display: none;
+  }
+  .dock__btn,
+  .dock__sep,
+  .dock__views,
+  .dock__slice {
+    flex: none;
+  }
+  .dock__browse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dock__explode label {
+    display: none;
+  }
+
+  .credits {
     display: none;
   }
 }

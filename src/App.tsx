@@ -5,8 +5,14 @@ import { InfoPanel } from "./ui/InfoPanel";
 import { Toolbar } from "./ui/Toolbar";
 import { DisplayControls } from "./ui/DisplayControls";
 import { Credits } from "./ui/Credits";
+import { useBrainStore } from "./state/store";
 
 export default function App() {
+  const selectedKey = useBrainStore((s) => s.selectedKey);
+  const mobileTreeOpen = useBrainStore((s) => s.mobileTreeOpen);
+  const toggleMobileTree = useBrainStore((s) => s.toggleMobileTree);
+  const select = useBrainStore((s) => s.select);
+
   return (
     <div className="app">
       <div className="stage">
@@ -37,11 +43,26 @@ export default function App() {
 
       <DisplayControls />
 
-      <aside className="panel panel--left">
+      {/* Tap-away backdrop for the mobile structure sheet. */}
+      {mobileTreeOpen && (
+        <div className="sheet-backdrop" onClick={toggleMobileTree} />
+      )}
+
+      <aside className={"panel panel--left" + (mobileTreeOpen ? " is-open" : "")}>
+        <button
+          className="panel__grip"
+          onClick={toggleMobileTree}
+          aria-label="Close structures"
+        />
         <StructureTree />
       </aside>
 
-      <aside className="panel panel--right">
+      <aside className={"panel panel--right" + (selectedKey ? " is-open" : "")}>
+        <button
+          className="panel__grip"
+          onClick={() => select(null)}
+          aria-label="Close panel"
+        />
         <InfoPanel />
       </aside>
 

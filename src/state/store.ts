@@ -45,6 +45,8 @@ interface BrainState {
   realistic: boolean;
   /** Show floating leader-line labels for structures. */
   showLabels: boolean;
+  /** Mobile: whether the structure-browser bottom sheet is open. */
+  mobileTreeOpen: boolean;
 
   select: (key: string | null) => void;
   hover: (key: string | null) => void;
@@ -60,6 +62,7 @@ interface BrainState {
   setSearch: (s: string) => void;
   toggleRealistic: () => void;
   toggleLabels: () => void;
+  toggleMobileTree: () => void;
   reset: () => void;
 }
 
@@ -77,10 +80,13 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
   search: "",
   realistic: false,
   showLabels: false,
+  mobileTreeOpen: false,
 
   select: (key) =>
     set((s) => ({
       selectedKey: key,
+      // Picking a structure closes the mobile browser so the info sheet shows.
+      mobileTreeOpen: false,
       focus:
         key === null
           ? s.focus
@@ -118,6 +124,7 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
 
   toggleRealistic: () => set((s) => ({ realistic: !s.realistic })),
   toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
+  toggleMobileTree: () => set((s) => ({ mobileTreeOpen: !s.mobileTreeOpen })),
 
   reset: () =>
     set((s) => ({
