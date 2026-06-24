@@ -41,6 +41,10 @@ interface BrainState {
   slice: SliceState;
   focus: FocusRequest;
   search: string;
+  /** Realistic uniform tissue look vs. anatomical colour-coding. */
+  realistic: boolean;
+  /** Show floating leader-line labels for structures. */
+  showLabels: boolean;
 
   select: (key: string | null) => void;
   hover: (key: string | null) => void;
@@ -54,6 +58,8 @@ interface BrainState {
   setView: (view: ViewPreset) => void;
   refocus: () => void;
   setSearch: (s: string) => void;
+  toggleRealistic: () => void;
+  toggleLabels: () => void;
   reset: () => void;
 }
 
@@ -69,6 +75,8 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
   slice: { enabled: false, axis: "x", position: 0, flip: false },
   focus: { kind: "view", view: "reset", nonce: 0 },
   search: "",
+  realistic: false,
+  showLabels: false,
 
   select: (key) =>
     set((s) => ({
@@ -107,6 +115,9 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
   },
 
   setSearch: (s) => set({ search: s }),
+
+  toggleRealistic: () => set((s) => ({ realistic: !s.realistic })),
+  toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
 
   reset: () =>
     set((s) => ({

@@ -1,6 +1,7 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Suspense, useEffect } from "react";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { CameraRig } from "./CameraRig";
 import { BrainModel } from "./BrainModel";
 import { useBrainStore } from "../state/store";
@@ -17,17 +18,35 @@ function ClippingController() {
   return null;
 }
 
+// Neutral studio IBL baked from three's RoomEnvironment — gives the materials
+// soft specular sheen + image-based fill without any external HDR fetch.
+function StudioEnvironment() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const tex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = tex;
+    return () => {
+      scene.environment = null;
+      tex.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+  return null;
+}
+
 function Lights() {
   return (
     <>
-      <hemisphereLight args={["#8c97b5", "#0a0d13", 0.5]} />
-      <ambientLight intensity={0.15} />
-      {/* Key */}
-      <directionalLight position={[4, 6, 5]} intensity={1.9} color="#fff4e8" />
+      {/* Directional light preserves albedo saturation better than bright IBL. */}
+      <ambientLight intensity={0.14} />
+      {/* Warm key */}
+      <directionalLight position={[4, 6, 5]} intensity={1.7} color="#ffeede" />
       {/* Cool fill */}
-      <directionalLight position={[-5, 1, 2]} intensity={0.55} color="#9fb4ff" />
-      {/* Rim / back — the signature edge glow */}
-      <directionalLight position={[-3, 2, -6]} intensity={1.8} color="#cfe0ff" />
+      <directionalLight position={[-5, 1, 2]} intensity={0.45} color="#9fb4ff" />
+      {/* Cool rim / back — signature edge glow */}
+      <directionalLight position={[-3, 2, -6]} intensity={1.5} color="#cfe0ff" />
     </>
   );
 }
@@ -45,8 +64,10 @@ export function BrainCanvas() {
         // Keep the drawing buffer so the canvas can be screenshotted/exported
         // reliably (and so captures aren't blank on idle frames).
         preserveDrawingBuffer: true,
-        toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.05,
+        // Neutral (Khronos PBR) tone mapping compresses highlights while keeping
+        // hue/saturation — ACES Filmic was washing the tissue colours toward white.
+        toneMapping: THREE.NeutralToneMapping,
+        toneMappingExposure: 1.0,
       }}
       camera={{ fov: 45, near: 0.05, far: 100, position: [2.4, 1.7, 3.6] }}
       onCreated={({ gl }) => {
@@ -55,6 +76,7 @@ export function BrainCanvas() {
       onPointerMissed={() => select(null)}
     >
       <Suspense fallback={null}>
+        <StudioEnvironment />
         <Lights />
         <BrainModel />
         <CameraRig />

@@ -6,6 +6,7 @@ import { STRUCTURE_KEYS, STRUCTURES } from "../data/structures";
 import { useBrainStore } from "../state/store";
 import { registerObject, unregisterObject } from "./registry";
 import { clipPlanes } from "./clipping";
+import { brainOnBeforeCompile } from "./brainShader";
 
 const MODEL_URL = "/models/brain.glb";
 const EXPLODE_K = 1.4;
@@ -13,6 +14,10 @@ const EXPLODE_K = 1.4;
 // The extracted GLB is already Y-up / Z-front (bbox: x=L/R, y=S/I, z=A/P), so no
 // corrective rotation is needed.
 const MODEL_ROTATION: [number, number, number] = [0, 0, 0];
+
+// Warm grey-pink fixed-brain tissue base for the "realistic" appearance mode.
+const TISSUE = new THREE.Color("#c8a191");
+const WHITE = new THREE.Color("#ffffff");
 
 const _c = new THREE.Vector3();
 
@@ -35,6 +40,7 @@ function StructureMesh({
   const anySelected = useBrainStore((s) => s.selectedKey !== null);
   const explode = useBrainStore((s) => s.explode);
   const sliceEnabled = useBrainStore((s) => s.slice.enabled);
+  const realistic = useBrainStore((s) => s.realistic);
 
   useEffect(() => {
     const g = groupRef.current;
@@ -54,17 +60,16 @@ function StructureMesh({
   if (!visible) return null;
 
   // Signature interaction: selecting a structure flies the camera in AND ghosts
-  // the rest translucent so the focus stands out (and deep structures become
-  // visible). The Isolate toggle deepens the fade to near-invisible.
+  // the rest translucent so the focus stands out. Isolate deepens the fade.
   const dimmed = anySelected && !selected;
-  const faded = dimmed; // drives depthWrite/transparency
   const opacity = dimmed ? (isolate ? 0.04 : 0.16) : 1;
-  // Highlight by glowing in the structure's own colour — no inverted-hull
-  // outline (its world-unit thickness ballooned over a ~3-unit model).
-  const emissiveIntensity = selected ? 0.5 : hovered ? 0.22 : 0.05;
-  const color = selected
-    ? new THREE.Color(info.color).lerp(new THREE.Color("#ffffff"), 0.18)
-    : info.color;
+  const emissiveIntensity = selected ? 0.4 : hovered ? 0.18 : 0.03;
+
+  const baseColor = realistic
+    ? TISSUE.clone().lerp(new THREE.Color(info.color), 0.12)
+    : new THREE.Color(info.color);
+  if (selected) baseColor.lerp(WHITE, 0.16);
+
   const offset: [number, number, number] = [
     dir.x * explode * EXPLODE_K,
     dir.y * explode * EXPLODE_K,
@@ -86,40 +91,61 @@ function StructureMesh({
     select(keyName);
   };
 
+  const showGhost = explode > 0.02 && !dimmed;
+
   return (
-    <group ref={groupRef} position={offset}>
-      <mesh
-        geometry={geometry}
-        userData={{ structureKey: keyName }}
-        onPointerOver={onOver}
-        onPointerOut={onOut}
-        onClick={onClick}
-      >
-        <meshStandardMaterial
-          color={color}
-          emissive={info.color}
-          emissiveIntensity={emissiveIntensity}
-          roughness={0.55}
-          metalness={0.0}
-          // transparent kept constant; occlusion via depthWrite (see PlaceholderBrain).
-          transparent
-          opacity={opacity}
-          depthWrite={!faded}
-          // One stable clip plane always present (pushed away when not slicing);
-          // double-sided while slicing so the cut reveals interior walls.
-          clippingPlanes={clipPlanes}
-          side={sliceEnabled ? THREE.DoubleSide : THREE.FrontSide}
-        />
-      </mesh>
-    </group>
+    <>
+      {/* Explode "trail": a faint shell left at the home position so you can see
+          where a part came from as it flies out. */}
+      {showGhost && (
+        <mesh geometry={geometry} renderOrder={-1} raycast={() => null}>
+          <meshBasicMaterial
+            color={info.color}
+            transparent
+            opacity={Math.min(0.14, explode * 0.14)}
+            depthWrite={false}
+            clippingPlanes={clipPlanes}
+          />
+        </mesh>
+      )}
+
+      <group ref={groupRef} position={offset}>
+        <mesh
+          geometry={geometry}
+          userData={{ structureKey: keyName }}
+          onPointerOver={onOver}
+          onPointerOut={onOut}
+          onClick={onClick}
+        >
+          <meshPhysicalMaterial
+            color={baseColor}
+            emissive={info.color}
+            emissiveIntensity={emissiveIntensity}
+            roughness={realistic ? 0.46 : 0.5}
+            metalness={0.0}
+            // Subtle wet coat — moist highlights without washing the hue.
+            clearcoat={0.4}
+            clearcoatRoughness={0.55}
+            // Low env so IBL gives wet specular but doesn't wash out the albedo.
+            envMapIntensity={0.18}
+            // transparent kept constant; occlusion via depthWrite.
+            transparent
+            opacity={opacity}
+            depthWrite={!dimmed}
+            clippingPlanes={clipPlanes}
+            side={sliceEnabled ? THREE.DoubleSide : THREE.FrontSide}
+            onBeforeCompile={brainOnBeforeCompile}
+          />
+        </mesh>
+      </group>
+    </>
   );
 }
 
 /**
  * The real Z-Anatomy / BodyParts3D brain. Loads the Draco-compressed GLB whose
  * nodes are named by structureKey (see scripts/extract_brain.mjs) and wires each
- * one into the same selection / focus / isolate / explode machinery as the
- * placeholder.
+ * one into selection / focus / isolate / explode / slice.
  */
 export function BrainModel() {
   const gltf = useGLTF(MODEL_URL, true) as unknown as {
