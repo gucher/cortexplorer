@@ -345,6 +345,120 @@ export const STRUCTURES: Record<string, StructureInfo> = {
     ],
     related: ["pons", "midbrain", "thalamus"],
   },
+
+  // ── Cranial nerves (separate lazy-loaded layer) ─────────────────────────────
+  olfactoryNerve: {
+    key: "olfactoryNerve",
+    name: "Olfactory nerve (I)",
+    system: "Cranial nerves",
+    color: "#e6c34a",
+    desc: "The first cranial nerve — carries the sense of smell from the nose straight up to the brain, the only sense that skips the thalamus.",
+    functions: ["Sense of smell"],
+    related: ["frontalLobe", "amygdala"],
+  },
+  opticNerve: {
+    key: "opticNerve",
+    name: "Optic nerve (II)",
+    system: "Cranial nerves",
+    color: "#dfd54a",
+    desc: "The second cranial nerve — carries visual signals from the retina to the brain, meeting its partner at the optic chiasm.",
+    functions: ["Vision"],
+    related: ["opticChiasm", "occipitalLobe", "thalamus"],
+  },
+  oculomotorNerve: {
+    key: "oculomotorNerve",
+    name: "Oculomotor nerve (III)",
+    system: "Cranial nerves",
+    color: "#e3b84a",
+    desc: "The third cranial nerve, from the midbrain — drives most eye movements, raises the eyelid, and constricts the pupil.",
+    functions: ["Most eye movements", "Eyelid elevation", "Pupil constriction"],
+    related: ["midbrain"],
+  },
+  trochlearNerve: {
+    key: "trochlearNerve",
+    name: "Trochlear nerve (IV)",
+    system: "Cranial nerves",
+    color: "#d4cc4a",
+    desc: "The slender fourth cranial nerve — controls the superior oblique muscle that rolls the eye down and inward.",
+    functions: ["Superior oblique eye muscle", "Downward/inward gaze"],
+    related: ["midbrain"],
+  },
+  trigeminalNerve: {
+    key: "trigeminalNerve",
+    name: "Trigeminal nerve (V)",
+    system: "Cranial nerves",
+    color: "#e8c24a",
+    desc: "The largest cranial nerve, from the pons — carries sensation from the whole face and drives the muscles of chewing.",
+    functions: ["Facial sensation", "Chewing (mastication)"],
+    related: ["pons"],
+  },
+  abducensNerve: {
+    key: "abducensNerve",
+    name: "Abducens nerve (VI)",
+    system: "Cranial nerves",
+    color: "#c9c44a",
+    desc: "The sixth cranial nerve — controls the lateral rectus muscle that turns the eye outward.",
+    functions: ["Lateral rectus eye muscle", "Outward gaze"],
+    related: ["pons"],
+  },
+  facialNerve: {
+    key: "facialNerve",
+    name: "Facial nerve (VII)",
+    system: "Cranial nerves",
+    color: "#e0cc4a",
+    desc: "The seventh cranial nerve — moves the muscles of facial expression, and carries taste from the front of the tongue plus tear and saliva control.",
+    functions: ["Facial expression", "Taste (anterior tongue)", "Tears & saliva"],
+    related: ["pons"],
+  },
+  vestibulocochlearNerve: {
+    key: "vestibulocochlearNerve",
+    name: "Vestibulocochlear nerve (VIII)",
+    system: "Cranial nerves",
+    color: "#c6c84a",
+    desc: "The eighth cranial nerve — carries hearing from the cochlea and balance from the vestibular organs to the brain.",
+    functions: ["Hearing", "Balance & equilibrium"],
+    related: ["pons", "temporalLobe", "cerebellum"],
+  },
+  glossopharyngealNerve: {
+    key: "glossopharyngealNerve",
+    name: "Glossopharyngeal nerve (IX)",
+    system: "Cranial nerves",
+    color: "#e6b84a",
+    desc: "The ninth cranial nerve, from the medulla — taste and sensation from the back of the tongue and throat, and a role in swallowing.",
+    functions: ["Taste (posterior tongue)", "Throat sensation", "Swallowing"],
+    related: ["medullaOblongata"],
+  },
+  vagusNerve: {
+    key: "vagusNerve",
+    name: "Vagus nerve (X)",
+    system: "Cranial nerves",
+    color: "#d8c44a",
+    desc: "The far-reaching tenth cranial nerve — the body's main parasympathetic line to the heart, lungs, and gut, plus voice and swallowing.",
+    functions: [
+      "Parasympathetic to heart, lungs, gut",
+      "Voice (larynx)",
+      "Swallowing & digestion",
+    ],
+    related: ["medullaOblongata"],
+  },
+  accessoryNerve: {
+    key: "accessoryNerve",
+    name: "Accessory nerve (XI)",
+    system: "Cranial nerves",
+    color: "#ccb84a",
+    desc: "The eleventh cranial nerve — drives the sternocleidomastoid and trapezius muscles that turn the head and shrug the shoulders.",
+    functions: ["Head rotation", "Shoulder elevation"],
+    related: ["medullaOblongata"],
+  },
+  hypoglossalNerve: {
+    key: "hypoglossalNerve",
+    name: "Hypoglossal nerve (XII)",
+    system: "Cranial nerves",
+    color: "#e0d04a",
+    desc: "The twelfth cranial nerve, from the medulla — controls the muscles of the tongue for speech and swallowing.",
+    functions: ["Tongue movement", "Speech & swallowing"],
+    related: ["medullaOblongata"],
+  },
 };
 
 /** Display order for grouping in the structure tree. */
@@ -357,6 +471,15 @@ export const SYSTEM_ORDER: string[] = [
   "Ventricular system",
   "Brainstem",
   "Hindbrain",
+  "Cranial nerves",
 ];
 
 export const STRUCTURE_KEYS = Object.keys(STRUCTURES);
+
+/** Cranial-nerve keys live in the separate, lazy-loaded nerves.glb layer. */
+export const NERVE_KEYS = Object.values(STRUCTURES)
+  .filter((s) => s.system === "Cranial nerves")
+  .map((s) => s.key);
+
+export const isNerveKey = (key: string | null): boolean =>
+  key != null && NERVE_KEYS.includes(key);

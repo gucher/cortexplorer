@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { CameraRig } from "./CameraRig";
 import { BrainModel } from "./BrainModel";
+import { NervesLayer } from "./NervesModel";
 import { useBrainStore } from "../state/store";
 import { updateClipPlane } from "./clipping";
 
@@ -80,6 +81,7 @@ export function BrainCanvas() {
         <StudioEnvironment />
         <Lights />
         <BrainModel />
+        <NervesLayer />
         <CameraRig />
         <ClippingController />
       </Suspense>

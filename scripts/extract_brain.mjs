@@ -25,6 +25,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const FBX = resolve(ROOT, "scripts/.cache/NervousSystem100.fbx");
 const OUT = resolve(ROOT, "public/models/brain.glb");
+const NERVES_OUT = resolve(ROOT, "public/models/nerves.glb");
 const DRY = process.argv.includes("--dry-run");
 const TARGET_SIZE = 3.0; // longest dimension, in scene units
 
@@ -97,6 +98,30 @@ const RULES = [
 function classify(name) {
   if (DROP.test(name)) return null;
   for (const [re, key] of RULES) if (re.test(name)) return key;
+  return null;
+}
+
+// ── Cranial nerves (separate nerves.glb layer, lazy-loaded in the app) ───────
+// Matched across the whole model (they live in the peripheral group). Body
+// nerves (plantar, median, …) match nothing and are ignored.
+const NERVE_RULES = [
+  [/olfactory_nerve/i, "olfactoryNerve"],
+  [/optic_nerve/i, "opticNerve"],
+  [/oculomotor/i, "oculomotorNerve"],
+  [/trochlear/i, "trochlearNerve"],
+  [/trigeminal/i, "trigeminalNerve"],
+  [/abducens/i, "abducensNerve"],
+  [/facial_nerve/i, "facialNerve"],
+  [/vestibulocochlear|cochlear_nerve|vestibular_nerve/i, "vestibulocochlearNerve"],
+  [/glossopharyngeal/i, "glossopharyngealNerve"],
+  [/vagus_nerve/i, "vagusNerve"],
+  [/accessory_nerve/i, "accessoryNerve"],
+  [/hypoglossal/i, "hypoglossalNerve"],
+];
+const NERVE_ORDER = NERVE_RULES.map(([, k]) => k);
+
+function classifyNerve(name) {
+  for (const [re, key] of NERVE_RULES) if (re.test(name)) return key;
   return null;
 }
 
@@ -246,41 +271,60 @@ for (const { pos } of merged.values()) {
   }
 }
 
-// ── Build glTF document ──────────────────────────────────────────────────────
-const doc = new Document();
-doc.createBuffer();
-const buffer = doc.getRoot().listBuffers()[0];
-const scene = doc.createScene("brain");
-
-for (const key of KEY_ORDER) {
-  const m = merged.get(key);
-  if (!m) continue;
-  const position = doc
-    .createAccessor(key + "_POSITION")
-    .setType("VEC3")
-    .setArray(m.pos)
-    .setBuffer(buffer);
-  const normal = doc
-    .createAccessor(key + "_NORMAL")
-    .setType("VEC3")
-    .setArray(m.nor)
-    .setBuffer(buffer);
-  const prim = doc
-    .createPrimitive()
-    .setAttribute("POSITION", position)
-    .setAttribute("NORMAL", normal);
-  const mesh = doc.createMesh(key).addPrimitive(prim);
-  const node = doc.createNode(key).setMesh(mesh);
-  scene.addChild(node);
+function concat(chunks) {
+  const len = chunks.reduce((s, c) => s + c.length, 0);
+  const out = new Float32Array(len);
+  let off = 0;
+  for (const c of chunks) {
+    out.set(c, off);
+    off += c.length;
+  }
+  return out;
 }
 
-// ── Optimize + Draco compress + write ────────────────────────────────────────
-console.log("\nOptimizing (weld + dedup + prune + draco)…");
-await doc.transform(
-  weld(),
-  dedup(),
-  prune(),
-);
+// ── Build doc → weld/dedup/prune → Draco → file ──────────────────────────────
+async function writeGLB(io, mergedMap, keyOrder, outPath, sceneName) {
+  const doc = new Document();
+  doc.createBuffer();
+  const buffer = doc.getRoot().listBuffers()[0];
+  const scene = doc.createScene(sceneName);
+  for (const key of keyOrder) {
+    const m = mergedMap.get(key);
+    if (!m) continue;
+    const position = doc
+      .createAccessor(key + "_POSITION")
+      .setType("VEC3")
+      .setArray(m.pos)
+      .setBuffer(buffer);
+    const normal = doc
+      .createAccessor(key + "_NORMAL")
+      .setType("VEC3")
+      .setArray(m.nor)
+      .setBuffer(buffer);
+    const prim = doc
+      .createPrimitive()
+      .setAttribute("POSITION", position)
+      .setAttribute("NORMAL", normal);
+    const mesh = doc.createMesh(key).addPrimitive(prim);
+    scene.addChild(doc.createNode(key).setMesh(mesh));
+  }
+  await doc.transform(weld(), dedup(), prune());
+  doc
+    .createExtension(KHRDracoMeshCompression)
+    .setRequired(true)
+    .setEncoderOptions({
+      method: KHRDracoMeshCompression.EncoderMethod.EDGEBREAKER,
+      quantizationVolume: "mesh",
+      quantizationBits: { POSITION: 14, NORMAL: 10 },
+    });
+  await doc.transform(draco());
+  await io.write(outPath, doc);
+  const mb = (readFileSync(outPath).length / 1024 / 1024).toFixed(2);
+  console.log(
+    `✔ Wrote ${outPath}\n  nodes: ${scene.listChildren().length}  |  size: ${mb} MB`,
+  );
+  console.log("  node names:", scene.listChildren().map((n) => n.getName()).join(", "));
+}
 
 const io = new NodeIO()
   .registerExtensions([KHRDracoMeshCompression])
@@ -289,20 +333,41 @@ const io = new NodeIO()
     "draco3d.decoder": await draco3d.createDecoderModule(),
   });
 
-doc.createExtension(KHRDracoMeshCompression).setRequired(true).setEncoderOptions({
-  method: KHRDracoMeshCompression.EncoderMethod.EDGEBREAKER,
-  quantizationVolume: "mesh",
-  quantizationBits: { POSITION: 14, NORMAL: 10 },
-});
-await doc.transform(draco());
+console.log("\nWriting brain.glb…");
+await writeGLB(io, merged, KEY_ORDER, OUT, "brain");
 
-await io.write(OUT, doc);
-const bytes = readFileSync(OUT).length;
-console.log(
-  `\n✔ Wrote ${OUT}\n  nodes: ${scene.listChildren().length}  |  size: ${(
-    bytes /
-    1024 /
-    1024
-  ).toFixed(2)} MB`,
-);
-console.log("  node names:", scene.listChildren().map((n) => n.getName()).join(", "));
+// ── Cranial nerves → nerves.glb (same center/scale, so it aligns) ────────────
+const nerveByKey = new Map();
+fbxRoot.traverse((o) => {
+  if (!o.isMesh || !o.geometry) return;
+  const g = o.geometry;
+  const tris = g.index ? g.index.count / 3 : (g.attributes.position?.count || 0) / 3;
+  if (tris < 30) return;
+  const key = classifyNerve(o.name);
+  if (!key) return;
+  if (!nerveByKey.has(key)) nerveByKey.set(key, []);
+  nerveByKey.get(key).push(o);
+});
+
+const nervesMerged = new Map();
+for (const key of NERVE_ORDER) {
+  const meshes = nerveByKey.get(key);
+  if (!meshes || !meshes.length) continue;
+  const posChunks = [];
+  const norChunks = [];
+  for (const m of meshes) {
+    const { pos, nor } = bakedPosNor(m);
+    posChunks.push(pos);
+    norChunks.push(nor);
+  }
+  const pos = concat(posChunks);
+  for (let i = 0; i < pos.length; i += 3) {
+    pos[i] = (pos[i] - center.x) * scale;
+    pos[i + 1] = (pos[i + 1] - center.y) * scale;
+    pos[i + 2] = (pos[i + 2] - center.z) * scale;
+  }
+  nervesMerged.set(key, { pos, nor: concat(norChunks) });
+}
+
+console.log("\nWriting nerves.glb…");
+await writeGLB(io, nervesMerged, NERVE_ORDER, NERVES_OUT, "nerves");

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { STRUCTURE_KEYS } from "../data/structures";
+import { STRUCTURE_KEYS, isNerveKey } from "../data/structures";
 
 export type Axis = "x" | "y" | "z";
 export type ViewPreset =
@@ -45,6 +45,8 @@ interface BrainState {
   realistic: boolean;
   /** Show floating leader-line labels for structures. */
   showLabels: boolean;
+  /** Show the cranial-nerve overlay layer (lazy-loads nerves.glb). */
+  showNerves: boolean;
   /** Mobile: whether the structure-browser bottom sheet is open. */
   mobileTreeOpen: boolean;
 
@@ -62,6 +64,7 @@ interface BrainState {
   setSearch: (s: string) => void;
   toggleRealistic: () => void;
   toggleLabels: () => void;
+  toggleNerves: () => void;
   toggleMobileTree: () => void;
   reset: () => void;
 }
@@ -80,6 +83,7 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
   search: "",
   realistic: false,
   showLabels: false,
+  showNerves: false,
   mobileTreeOpen: false,
 
   select: (key) =>
@@ -87,6 +91,8 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
       selectedKey: key,
       // Picking a structure closes the mobile browser so the info sheet shows.
       mobileTreeOpen: false,
+      // Selecting a cranial nerve auto-enables its (lazy-loaded) layer.
+      showNerves: s.showNerves || isNerveKey(key),
       focus:
         key === null
           ? s.focus
@@ -124,6 +130,7 @@ export const useBrainStore = create<BrainState>()((set, get) => ({
 
   toggleRealistic: () => set((s) => ({ realistic: !s.realistic })),
   toggleLabels: () => set((s) => ({ showLabels: !s.showLabels })),
+  toggleNerves: () => set((s) => ({ showNerves: !s.showNerves })),
   toggleMobileTree: () => set((s) => ({ mobileTreeOpen: !s.mobileTreeOpen })),
 
   reset: () =>

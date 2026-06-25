@@ -5,6 +5,8 @@ export function DisplayControls() {
   const toggleRealistic = useBrainStore((s) => s.toggleRealistic);
   const showLabels = useBrainStore((s) => s.showLabels);
   const toggleLabels = useBrainStore((s) => s.toggleLabels);
+  const showNerves = useBrainStore((s) => s.showNerves);
+  const toggleNerves = useBrainStore((s) => s.toggleNerves);
 
   const snapshot = () => {
     const canvas = document.querySelector("canvas");
@@ -47,6 +49,24 @@ export function DisplayControls() {
           />
         </svg>
         Labels
+      </button>
+
+      <button
+        className={"display__btn" + (showNerves ? " is-active" : "")}
+        onClick={toggleNerves}
+        aria-pressed={showNerves}
+        title="Cranial nerves (I–XII)"
+      >
+        <svg viewBox="0 0 16 16" aria-hidden width="14" height="14">
+          <path
+            d="M8 1.5c0 2-2 2.5-2 4.5s2 2.5 2 4.5-2 2.5-2 4M8 1.5c0 2 2 2.5 2 4.5s-2 2.5-2 4.5 2 2.5 2 4"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </svg>
+        Nerves
       </button>
 
       <button className="display__btn" onClick={snapshot} title="Download PNG">
