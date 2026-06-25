@@ -119,18 +119,24 @@ function StructureMesh({
           onClick={onClick}
         >
           <meshPhysicalMaterial
+            // Remount when the transparent state flips so the program rebuilds
+            // cleanly (avoids a stale opaque/transparent material).
+            key={dimmed ? "fade" : "solid"}
             color={baseColor}
             emissive={info.color}
             emissiveIntensity={emissiveIntensity}
-            roughness={realistic ? 0.46 : 0.5}
+            roughness={realistic ? 0.58 : 0.62}
             metalness={0.0}
-            // Subtle wet coat — moist highlights without washing the hue.
-            clearcoat={0.4}
-            clearcoatRoughness={0.55}
-            // Low env so IBL gives wet specular but doesn't wash out the albedo.
-            envMapIntensity={0.18}
-            // transparent kept constant; occlusion via depthWrite.
-            transparent
+            // Just a hint of sheen — broad and soft so it doesn't pool into a
+            // glossy hot-spot on the lit side; keeps the surface uniform.
+            clearcoat={0.12}
+            clearcoatRoughness={0.7}
+            // Low env so IBL gives gentle specular but doesn't wash the albedo.
+            envMapIntensity={0.12}
+            // Opaque unless actually fading — transparent self-overlapping gyri
+            // don't depth-sort and produce a translucent half-brain at the
+            // midline view. Only the focus-fade needs real transparency.
+            transparent={dimmed}
             opacity={opacity}
             depthWrite={!dimmed}
             clippingPlanes={clipPlanes}

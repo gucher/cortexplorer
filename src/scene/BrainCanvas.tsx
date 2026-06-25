@@ -39,14 +39,15 @@ function StudioEnvironment() {
 function Lights() {
   return (
     <>
-      {/* Directional light preserves albedo saturation better than bright IBL. */}
-      <ambientLight intensity={0.14} />
-      {/* Warm key */}
-      <directionalLight position={[4, 6, 5]} intensity={1.7} color="#ffeede" />
-      {/* Cool fill */}
-      <directionalLight position={[-5, 1, 2]} intensity={0.45} color="#9fb4ff" />
-      {/* Cool rim / back — signature edge glow */}
-      <directionalLight position={[-3, 2, -6]} intensity={1.5} color="#cfe0ff" />
+      {/* Balanced, even illumination so the brain reads as one unified surface
+          rather than a hot glossy side + a dark matte side. */}
+      <ambientLight intensity={0.3} />
+      {/* Soft key */}
+      <directionalLight position={[4, 6, 5]} intensity={0.95} color="#fff1e6" />
+      {/* Fill close to key to even out the two hemispheres */}
+      <directionalLight position={[-5, 1, 2]} intensity={0.8} color="#aebfe0" />
+      {/* Gentle rim */}
+      <directionalLight position={[-3, 2, -6]} intensity={0.85} color="#cfe0ff" />
     </>
   );
 }
