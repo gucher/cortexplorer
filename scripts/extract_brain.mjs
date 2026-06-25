@@ -28,6 +28,9 @@ const OUT = resolve(ROOT, "public/models/brain.glb");
 const NERVES_OUT = resolve(ROOT, "public/models/nerves.glb");
 const DRY = process.argv.includes("--dry-run");
 const TARGET_SIZE = 3.0; // longest dimension, in scene units
+// Cranial nerves are trimmed below this Y (just under the brainstem) so the
+// model carries no hidden geometry below the brain (matches the render clip).
+const NERVE_FLOOR = 1.28;
 
 // ── DOM stubs so FBXLoader's texture path is a no-op headless ────────────────
 globalThis.self = globalThis;
@@ -361,12 +364,27 @@ for (const key of NERVE_ORDER) {
     norChunks.push(nor);
   }
   const pos = concat(posChunks);
+  const nor = concat(norChunks);
   for (let i = 0; i < pos.length; i += 3) {
     pos[i] = (pos[i] - center.x) * scale;
     pos[i + 1] = (pos[i + 1] - center.y) * scale;
     pos[i + 2] = (pos[i + 2] - center.z) * scale;
   }
-  nervesMerged.set(key, { pos, nor: concat(norChunks) });
+  // Drop triangles entirely below the floor — the trimmed nerve carries no
+  // hidden geometry far below the brain, so there's nothing to click there.
+  const tp = [];
+  const tn = [];
+  for (let i = 0; i < pos.length; i += 9) {
+    if (Math.max(pos[i + 1], pos[i + 4], pos[i + 7]) < -NERVE_FLOOR) continue;
+    for (let j = 0; j < 9; j++) {
+      tp.push(pos[i + j]);
+      tn.push(nor[i + j]);
+    }
+  }
+  nervesMerged.set(key, {
+    pos: new Float32Array(tp),
+    nor: new Float32Array(tn),
+  });
 }
 
 console.log("\nWriting nerves.glb…");
