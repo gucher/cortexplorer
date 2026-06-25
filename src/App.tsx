@@ -5,6 +5,7 @@ import { InfoPanel } from "./ui/InfoPanel";
 import { Toolbar } from "./ui/Toolbar";
 import { DisplayControls } from "./ui/DisplayControls";
 import { Credits } from "./ui/Credits";
+import { AdSlot } from "./ui/AdSlot";
 import { useBrainStore } from "./state/store";
 
 export default function App() {
@@ -67,6 +68,7 @@ export default function App() {
       </aside>
 
       <Toolbar />
+      <AdSlot />
       <Credits />
 
       <Loader
