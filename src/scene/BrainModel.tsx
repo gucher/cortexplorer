@@ -92,7 +92,8 @@ function StructureMesh({
   };
 
   const showGhost = explode > 0.02 && !dimmed;
-  const labelVisible = selected || (showLabels && !dimmed);
+  // Labels toggle is the master switch (so it can fully clear for screenshots).
+  const labelVisible = showLabels && !dimmed;
 
   return (
     <>
@@ -125,14 +126,13 @@ function StructureMesh({
             color={baseColor}
             emissive={info.color}
             emissiveIntensity={emissiveIntensity}
-            roughness={realistic ? 0.58 : 0.62}
+            roughness={realistic ? 0.66 : 0.7}
             metalness={0.0}
-            // Just a hint of sheen — broad and soft so it doesn't pool into a
-            // glossy hot-spot on the lit side; keeps the surface uniform.
-            clearcoat={0.12}
-            clearcoatRoughness={0.7}
-            // Low env so IBL gives gentle specular but doesn't wash the albedo.
-            envMapIntensity={0.12}
+            // Near-matte: no clearcoat hot-spot, minimal env reflection — so
+            // neither side shows a glossy sheen. Clean "model" surface.
+            clearcoat={0.04}
+            clearcoatRoughness={0.85}
+            envMapIntensity={0.06}
             // Opaque unless actually fading — transparent self-overlapping gyri
             // don't depth-sort and produce a translucent half-brain at the
             // midline view. Only the focus-fade needs real transparency.
@@ -150,7 +150,7 @@ function StructureMesh({
             position={[centroid.x, centroid.y, centroid.z]}
             center
             occlude={showLabels && !selected}
-            zIndexRange={[40, 0]}
+            zIndexRange={[6, 0]}
             wrapperClass="label3d-wrap"
           >
             <button

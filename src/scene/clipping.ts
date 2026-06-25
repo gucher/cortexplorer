@@ -10,6 +10,13 @@ import type { Axis } from "../state/store";
 export const clipPlane = new THREE.Plane(new THREE.Vector3(1, 0, 0), 1e6);
 export const clipPlanes = [clipPlane];
 
+// Cranial nerves trail down into the neck; trim everything below the brainstem
+// (keep y > -NERVE_FLOOR) so the brain stays the hero. Nerve materials use this
+// plane in addition to the cross-section plane.
+const NERVE_FLOOR = 1.28;
+export const nerveFloorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), NERVE_FLOOR);
+export const nerveClipPlanes = [clipPlane, nerveFloorPlane];
+
 // Half the model's largest extent (model is centered, longest axis ~3 units).
 const HALF_EXTENT = 1.7;
 

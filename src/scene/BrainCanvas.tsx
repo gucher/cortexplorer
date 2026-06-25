@@ -40,15 +40,13 @@ function StudioEnvironment() {
 function Lights() {
   return (
     <>
-      {/* Balanced, even illumination so the brain reads as one unified surface
-          rather than a hot glossy side + a dark matte side. */}
-      <ambientLight intensity={0.3} />
-      {/* Soft key */}
-      <directionalLight position={[4, 6, 5]} intensity={0.95} color="#fff1e6" />
-      {/* Fill close to key to even out the two hemispheres */}
-      <directionalLight position={[-5, 1, 2]} intensity={0.8} color="#aebfe0" />
-      {/* Gentle rim */}
-      <directionalLight position={[-3, 2, -6]} intensity={0.85} color="#cfe0ff" />
+      {/* Symmetric key + mirrored fill so neither hemisphere is brighter/shinier
+          than the other — the surface reads as one uniform material. */}
+      <ambientLight intensity={0.42} />
+      <directionalLight position={[5, 5, 4]} intensity={0.7} color="#fff3ea" />
+      <directionalLight position={[-5, 5, 4]} intensity={0.7} color="#eef2ff" />
+      {/* Centered back rim */}
+      <directionalLight position={[0, 3, -6]} intensity={0.55} color="#cfe0ff" />
     </>
   );
 }

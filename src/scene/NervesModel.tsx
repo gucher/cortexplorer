@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { STRUCTURES, NERVE_KEYS, isNerveKey } from "../data/structures";
 import { useBrainStore } from "../state/store";
 import { registerObject, unregisterObject } from "./registry";
-import { clipPlanes } from "./clipping";
+import { nerveClipPlanes } from "./clipping";
 
 const NERVES_URL = "/models/nerves.glb";
 const MODEL_ROTATION: [number, number, number] = [0, 0, 0];
@@ -50,7 +50,8 @@ function NerveMesh({
   const color = selected
     ? new THREE.Color(info.color).lerp(WHITE, 0.15)
     : new THREE.Color(info.color);
-  const labelVisible = selected || (showLabels && !dimmed);
+  // Labels toggle is the master switch (so it can fully clear for screenshots).
+  const labelVisible = showLabels && !dimmed;
 
   return (
     <group ref={groupRef}>
@@ -82,7 +83,7 @@ function NerveMesh({
           transparent={dimmed}
           opacity={opacity}
           depthWrite={!dimmed}
-          clippingPlanes={clipPlanes}
+          clippingPlanes={nerveClipPlanes}
           side={sliceEnabled ? THREE.DoubleSide : THREE.FrontSide}
         />
       </mesh>
@@ -92,7 +93,7 @@ function NerveMesh({
           position={[centroid.x, centroid.y, centroid.z]}
           center
           occlude={showLabels && !selected}
-          zIndexRange={[40, 0]}
+          zIndexRange={[6, 0]}
           wrapperClass="label3d-wrap"
         >
           <button
