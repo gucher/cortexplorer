@@ -44,31 +44,41 @@ if (!globalThis.document) {
 // ── Classification ───────────────────────────────────────────────────────────
 // Long-range tracts, cranial nerves, meninges, spinal cord, helpers: dropped.
 const DROP =
-  /spinothalamic|spinocerebellar|corticospinal|reticulospinal|vestibulospinal|tectospinal|rubrospinal|_tract|tractus|lemniscus|radiation|olfactory_nerve|optic_(nerve|tract|chiasm)|cranial_nerve|falx|tentorium|dura|arachnoid|pia_mater|cross_section|-path|spinal_cord|filum|denticulate|cauda_|conus_|central_canal|pyramidal_decussation/i;
+  /spinothalamic|spinocerebellar|corticospinal|reticulospinal|vestibulospinal|tectospinal|rubrospinal|_tract|tractus|lemniscus|radiation|olfactory_nerve|optic_nerve|cranial_nerve|falx|tentorium|dura|arachnoid|pia_mater|cross_section|-path|spinal_cord|filum|denticulate|cauda_|conus_|central_canal|pyramidal_decussation/i;
 
 // Ordered rules — first match wins. Specific before general (e.g. hypothalamus
 // before thalamus; commissures before hippocampus).
 const RULES = [
-  [/hypothalam|mam+ill/i, "hypothalamus"],
-  [/thalamus|thalamic|geniculate|pulvinar|epithalam|pineal|habenul/i, "thalamus"],
+  // ── Diencephalon (specific deep structures first) ──
+  [/mam+ill/i, "mammillaryBody"],
+  [/hypothalam/i, "hypothalamus"],
+  [/optic_chiasm/i, "opticChiasm"],
+  [/pineal|epithalam|habenul/i, "pinealGland"],
+  [/thalamus|thalamic|geniculate|pulvinar/i, "thalamus"],
+  // ── Limbic white matter ──
+  [/fornix/i, "fornix"],
   [
-    /corpus_callosum|callosal|_commissure|commissural|fornix|septum_pellucid|septal/i,
+    /corpus_callosum|callosal|_commissure|commissural|septum_pellucid|septal/i,
     "corpusCallosum",
   ],
   [/hippocamp/i, "hippocampus"],
   [/amygdal/i, "amygdala"],
-  [
-    /caudate|putamen|pallid|striatum|accumbens|claustrum|lentiform|substantia_nigra|subthalamic/i,
-    "basalGanglia",
-  ],
+  // ── Basal ganglia (split into its named nuclei) ──
+  [/caudate|accumbens/i, "caudateNucleus"],
+  [/putamen|lentiform|striatum|claustrum/i, "putamen"],
+  [/pallid/i, "globusPallidus"],
   [/ventricle|choroid_plexus|aqueduct/i, "ventricles"],
+  // ── Cerebellum ──
   [
     /cerebell|vermis|culmen|declive|lingula_of_cerebellum|folium|uvula|nodulus|flocculus|dentate_nucleus|fastigial|tonsil|pyramis|semilunar|biventral|gracile_lobule|quadrangular|wing_of_central|central_lobule/i,
     "cerebellum",
   ],
+  // ── Brainstem (split into its three segments) ──
+  [/\bpons\b|pons[lr]|pontine/i, "pons"],
+  [/medulla|\bolive/i, "medullaOblongata"],
   [
-    /brain.?stem|midbrain|mesencephal|pons|pontine|medulla|peduncle|colliculus|tectum|tegmentum|red_nucleus|reticular_formation|interpeduncular|substantia_innominata|raphe|\bolive/i,
-    "brainstem",
+    /midbrain|mesencephal|peduncle|colliculus|tectum|tegmentum|red_nucleus|substantia_nigra|subthalamic|reticular_formation|interpeduncular|substantia_innominata|raphe/i,
+    "midbrain",
   ],
   [/insula|circular_sulcus_of_insula/i, "insula"],
   [/cingul|paraterminal|subcallosal|indusium/i, "cingulate"],
@@ -131,13 +141,21 @@ const KEY_ORDER = [
   "cingulate",
   "hippocampus",
   "amygdala",
+  "fornix",
   "thalamus",
   "hypothalamus",
-  "basalGanglia",
+  "mammillaryBody",
+  "pinealGland",
+  "opticChiasm",
+  "caudateNucleus",
+  "putamen",
+  "globusPallidus",
   "corpusCallosum",
   "ventricles",
+  "midbrain",
+  "pons",
+  "medullaOblongata",
   "cerebellum",
-  "brainstem",
 ];
 
 console.log("\n=== GROUPING REPORT ===");
